@@ -3,6 +3,7 @@ package com.fladenchef.rating.model.entity
 import com.fladenchef.rating.model.enums.Ingredients
 import com.fladenchef.rating.model.enums.Sauces
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
@@ -13,8 +14,9 @@ data class KebabVariant(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
-    @Column(nullable = false)
-    val placeId: UUID,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "place_id", nullable = false)
+    val place: Place,
 
     @Column(nullable = false, length = 100)
     val name: String,
@@ -22,14 +24,16 @@ data class KebabVariant(
     @Column(length = 500)
     val description: String? = null,
 
-    @Column(nullable = false)
-    val price: Float = 0.0f,
+    @Column(nullable = false, precision = 10, scale = 2)
+    val price: BigDecimal,
 
-    @Column(nullable = false)
-    val breadType: UUID,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bread_type_id", nullable = false)
+    val breadType: BreadType,
 
-    @Column(nullable = false)
-    val meatType: UUID,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meat_type_id", nullable = false)
+    val meatType: MeatType,
 
     @Column(nullable = false)
     val isVegetarian: Boolean = false,
