@@ -22,7 +22,7 @@ data class KebabVariant(
     @Column(length = 500)
     val description: String? = null,
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     val price: Float = 0.0f,
 
     @Column(nullable = false)
