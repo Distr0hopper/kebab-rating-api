@@ -10,7 +10,7 @@ import java.util.UUID
 interface KebabVariantRepository : JpaRepository<KebabVariant, UUID> {
 
     // Find all kebabs from a specific place
-    fun findByPlaceId(place: Place): List<KebabVariant>
+    fun findByPlace(place: Place): List<KebabVariant>
 
     // Find vegetarian kebabs
     fun findByIsVegetarian(isVegetarian: Boolean): List<KebabVariant>

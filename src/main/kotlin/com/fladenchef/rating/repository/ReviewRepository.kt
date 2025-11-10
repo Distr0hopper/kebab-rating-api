@@ -9,7 +9,7 @@ import java.util.UUID
 interface ReviewRepository : JpaRepository<Review, UUID> {
 
     // Find all reviews by a specific user
-    fun findByUser(userId: User): List<Review>
+    fun findByUser(user: User): List<Review>
 
     // Find all reviews for a specific kebab variant
     fun findByKebabVariant(kebabVariant: KebabVariant): List<Review>
