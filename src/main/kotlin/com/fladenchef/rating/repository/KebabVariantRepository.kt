@@ -7,22 +7,22 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
-interface KebabVariantRepository : JpaRepository<MeatType, UUID> {
+interface KebabVariantRepository : JpaRepository<KebabVariant, UUID> {
 
     // Find all kebabs from a specific place
-    fun findByPlaceId(place: Place): List<MeatType>
+    fun findByPlaceId(place: Place): List<KebabVariant>
 
     // Find vegetarian kebabs
-    fun findByIsVegitarian(isVegetarian: Boolean): List<MeatType>
+    fun findByIsVegetarian(isVegetarian: Boolean): List<KebabVariant>
 
     // Find spicy kebabs
-    fun findBySpicy(spicy: Boolean): List<MeatType>
+    fun findBySpicy(spicy: Boolean): List<KebabVariant>
 
     // Find kebabs with rating greater X
-    fun findByAverageRatingGreaterThanEqual(minRating: Float): List<MeatType>
+    fun findByAverageRatingGreaterThanEqual(minRating: Float): List<KebabVariant>
 
     // Top-rated kebabs (sorted by rating)
-    fun findAllOrderByAverageRatingDesc(): List<MeatType>
+    fun findAllByOrderByAverageRatingDesc(): List<KebabVariant>
 
     // Custom JPQL Query: Top N kebabs in a specific city
     @Query("""

@@ -21,7 +21,7 @@ interface ReviewRepository : JpaRepository<Review, UUID> {
     fun findByUserAndKebabVariant(user: User, kebabVariant: KebabVariant): Review?
 
     // Newest reviews first
-    fun findAllByOrderCreatedAtDesc(): List<Review>
+    fun findAllByOrderByCreatedAtDesc(): List<Review>
 
     // Reviews with rating >= X
     fun findByRatingGreaterThanEqual(minRating: Float): List<Review>

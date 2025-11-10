@@ -11,11 +11,13 @@ data class Review (
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
-    @Column(nullable = false)
-    val userId: UUID,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    val user: User,
 
-    @Column(nullable = false)
-    val variantId: UUID,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "kebab_variant_id" , nullable = false)
+    val kebabVariant: KebabVariant,
 
     @Column(nullable = false)
     val rating: Int, // 1-5
