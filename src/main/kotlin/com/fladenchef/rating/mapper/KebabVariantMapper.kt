@@ -2,7 +2,9 @@ package com.fladenchef.rating.mapper
 
 import com.fladenchef.rating.model.dto.KebabVariantResponseDto
 import com.fladenchef.rating.model.entity.KebabVariant
-
+/*
+    * Mapper function to convert KebabVariant entity to KebabVariantResponseDto
+ */
 fun KebabVariant.toDto(): KebabVariantResponseDto {
     return KebabVariantResponseDto(
         id = this.id!!,

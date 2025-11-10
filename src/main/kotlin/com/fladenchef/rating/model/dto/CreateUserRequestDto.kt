@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*
 data class CreateUserRequestDto(
     @field:NotBlank(message="Username must not be blank")
     @field:Size(min=3, max=50, message="Username must be between 3 and 50 characters long")
-    val userName: String,
+    val username: String,
 
     @field:NotBlank(message="Email must not be blank")
     @field:Email(message = "Invalid Email-Adress")
