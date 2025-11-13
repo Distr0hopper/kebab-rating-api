@@ -22,14 +22,14 @@ data class Place(
     val city: String,
 
     @Column(nullable = false)
-    val averageRating: Float = 0.0f,
+    var averageRating: Float = 0.0f,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val priceRange: PriceRange,
 
     @Column(nullable = false)
-    val reviewCount: Int = 0,
+    var reviewCount: Int = 0,
 
     @Column(nullable = true, updatable = false)
     val createdAt: Instant = Instant.now(),
