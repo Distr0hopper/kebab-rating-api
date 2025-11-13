@@ -7,9 +7,11 @@ import com.fladenchef.rating.model.entity.Review
 import com.fladenchef.rating.repository.KebabVariantRepository
 import com.fladenchef.rating.repository.ReviewRepository
 import com.fladenchef.rating.repository.UserRepository
+import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.UUID
 
+@Service
 class ReviewService (
     private val reviewRepository: ReviewRepository,
     private val userRepository: UserRepository,
