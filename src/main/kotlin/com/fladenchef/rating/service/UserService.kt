@@ -67,6 +67,8 @@ class UserService (
     private fun hashPassword(password: String): String {
         // For MVP: return the password as is
         return password
+        // Alternative: Simple hash
+        // return password.hashCode().toString()
     }
 
 }
