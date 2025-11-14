@@ -2,6 +2,7 @@ spring:
   application:
     name: kebab-rating-api
 
+  # Default H2 Database Configuration
   datasource:
     url: jdbc:h2:mem:kebabdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
@@ -21,10 +22,10 @@ spring:
 server:
   port: 8080
 
-  # Swagger/OpenAPI Configuration
-  springdoc:
-    api-docs:
-      path: /api-docs
-    swagger-ui:
-      path: /swagger-ui.html
-      enabled: true
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kebab-postgres
+    environment:
+      POSTGRES_DB: kebabdb
+      POSTGRES_USER: kebab
+      POSTGRES_PASSWORD: kebab123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: kebab-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@kebab.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
