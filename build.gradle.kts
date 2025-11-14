@@ -32,8 +32,14 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 	testRuntimeOnly("com.h2database:h2") // Keep h2 for tests
 	runtimeOnly("org.postgresql:postgresql") // Postgre for runtime
+    // For testing
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    //testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+    //testImplementation("org.mockito:mockito-core:5.7.0")
+    // Use MockK instead of mockito because its better
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
