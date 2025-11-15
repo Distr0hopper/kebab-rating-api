@@ -3,6 +3,7 @@ package com.fladenchef.rating.service
 import com.fladenchef.rating.mapper.toDto
 import com.fladenchef.rating.model.dto.CreateReviewRequestDto
 import com.fladenchef.rating.model.dto.ReviewResponseDto
+import com.fladenchef.rating.model.dto.UpdateReviewRequestDto
 import com.fladenchef.rating.model.entity.Review
 import com.fladenchef.rating.repository.KebabVariantRepository
 import com.fladenchef.rating.repository.ReviewRepository
@@ -18,7 +19,9 @@ class ReviewService (
     private val kebabVariantRepository: KebabVariantRepository,
     private val ratingCalculationService: RatingCalculationService
 ){
-
+    /*
+     *  Create-Operations
+     */
     fun createReview(userId: UUID, request: CreateReviewRequestDto): ReviewResponseDto {
         // Load entities
         val user = userRepository.findById(userId)
@@ -52,6 +55,9 @@ class ReviewService (
         return savedReview.toDto()
     }
 
+    /*
+     *  Read-Operations
+     */
     fun getReviewbyId(reviewId: UUID): ReviewResponseDto {
         val review = reviewRepository.findById(reviewId)
             .orElseThrow{ throw NoSuchElementException("Review not found with id $reviewId") }
@@ -78,5 +84,50 @@ class ReviewService (
 
         return reviewRepository.findByKebabVariant(kebab)
             .map { it.toDto() }
+    }
+
+    /*
+     * Update-Operations
+     */
+    fun updateReview(reviewId: UUID, request: UpdateReviewRequestDto): ReviewResponseDto {
+        // Find existing review
+        val existingReview = reviewRepository.findById(reviewId).orElseThrow {
+            throw NoSuchElementException("Review not found with id $reviewId")
+        }
+
+        // Create updated review (data classes are immutable)
+        val updatedReview = existingReview.copy(
+            rating = request.rating,
+            title = request.title,
+            comment = request.comment
+        )
+
+        val savedReview = reviewRepository.save(updatedReview)
+
+        // Recalculate ratings after update
+        ratingCalculationService.updateKebabRating(existingReview.kebabVariant.id!!)
+        ratingCalculationService.updatePlaceRating(existingReview.kebabVariant.place.id!!)
+
+        return savedReview.toDto()
+    }
+
+    /*
+     * Delete-Operations
+     */
+    fun deleteReview(reviewId: UUID) {
+        // Find existing review to get kebab and place for rating recalculation
+        val review = reviewRepository.findById(reviewId).orElseThrow {
+            throw NoSuchElementException("Review not found with id $reviewId")
+        }
+
+        val kebabId = review.kebabVariant.id!!
+        val placeId = review.kebabVariant.place.id!!
+
+        // Delete review
+        reviewRepository.deleteById(reviewId)
+
+        // Recalculate ratings after deletion
+        ratingCalculationService.updateKebabRating(kebabId)
+        ratingCalculationService.updatePlaceRating(placeId)
     }
 }
