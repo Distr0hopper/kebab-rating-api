@@ -34,12 +34,14 @@ The Architecture follows a layered approach.
 ### Run Application
 ```bash
 # Clone repository
+# Build project
+./gradlew clean build
 # Run with H2 (in-memory)
 ./gradlew bootRun
 
 # Or with Docker Compose (PostgreSQL)
 docker-compose up -d
-./gradlew bootRun
+./gradlew bootRun --args='--spring.profiles.active=postgres'
 ```
 
 ### Access
@@ -47,10 +49,13 @@ docker-compose up -d
 - **API:** http://localhost:8080
 - **Swagger UI:** http://localhost:8080/swagger-ui.html
 - **H2 Console:** http://localhost:8080/h2-console
+- **pgAdmin:** http://localhost:5050  
+  - User: `admin@kebab.com`
+  - Password: `admin`
 
 ## 📚 API Documentation
 
-Full API documentation available at `/swagger-ui.html` when running.
+Full API documentation available at `localhost:8080/swagger-ui.html` when running.
 
 ### Example Endpoints
 ```
@@ -77,19 +82,23 @@ POST   /api/reviews
 # Run with coverage
 ./gradlew test jacocoTestReport
 ```
+Find test report under `build/reports/jacoco/test/html/index.html`.
 
 ## 📝 Project Structure
 ```
 src/main/kotlin/com/fladenchef/rating/
+├── config/              # Data Seeding
 ├── controller/          # REST endpoints
-├── service/             # Business logic
-├── repository/          # Data access
+├── mapper/              # DTO mappers
 ├── model/
 │   ├── entity/          # JPA entities
 │   ├── dto/             # Data transfer objects
 │   └── enum/            # Enums (PriceRange, etc.)
-├── config/              # Spring configuration
-└── exception/           # Custom exceptions
+├── repository/          # Data access
+├── service/             # Business logic
+
+src/test/kotlin/com/fladenchef/rating/
+├── service/             # Service tests
 ```
 
 ## 🤝 Contributing
