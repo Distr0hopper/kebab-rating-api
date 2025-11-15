@@ -2,15 +2,16 @@ package com.fladenchef.rating.service
 
 import com.fladenchef.rating.mapper.toDto
 import com.fladenchef.rating.model.dto.CreatePlaceRequestDto
+import com.fladenchef.rating.model.dto.UpdatePlaceRequestDto
 import com.fladenchef.rating.model.entity.Place
 import com.fladenchef.rating.model.enums.PriceRange
 import com.fladenchef.rating.repository.PlaceRepository
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.Instant
+import java.util.Optional
 import java.util.UUID
 
 class PlaceServiceTest {
@@ -283,6 +284,139 @@ class PlaceServiceTest {
         // Then
         assertEquals(1, result.size)
         assertEquals(place.toDto(), result[0])
+    }
+
+    @Test
+    fun `should update place successfully`() {
+        // Given
+        val placeId = UUID.randomUUID()
+        val existingPlace = Place(
+            id = placeId,
+            name = "Old Place",
+            address = "Old Address 123",
+            city = "Old City",
+            priceRange = PriceRange.CHEAP,
+            averageRating = 4.0f,
+            reviewCount = 10,
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdatePlaceRequestDto(
+            name = "New Place",
+            address = "New Address 456",
+            city = "New City",
+            priceRange = PriceRange.EXPENSIVE
+        )
+
+        val updatedPlace = existingPlace.copy(
+            name = updateRequest.name,
+            address = updateRequest.address,
+            city = updateRequest.city,
+            priceRange = updateRequest.priceRange
+        )
+
+        every { placeRepository.findById(placeId) } returns Optional.of(existingPlace)
+        every { placeRepository.save(any()) } returns updatedPlace
+
+        // When
+        val result = placeService.updatePlace(placeId, updateRequest)
+
+        // Then
+        assertEquals("New Place", result.name)
+        assertEquals("New Address 456", result.address)
+        assertEquals("New City", result.city)
+        assertEquals(PriceRange.EXPENSIVE, result.priceRange)
+        // averageRating and reviewCount should remain unchanged
+        assertEquals(4.0f, result.averageRating)
+        assertEquals(10, result.reviewCount)
+        verify { placeRepository.save(any()) }
+    }
+
+    @Test
+    fun `should throw exception when updating non-existing place`() {
+        // Given
+        val placeId = UUID.randomUUID()
+        val updateRequest = UpdatePlaceRequestDto(
+            name = "Test Place",
+            address = "Test Address",
+            city = "Test City",
+            priceRange = PriceRange.MEDIUM
+        )
+
+        every { placeRepository.findById(placeId) } returns Optional.empty()
+
+        // When + Then
+        assertThrows<NoSuchElementException> {
+            placeService.updatePlace(placeId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should keep averageRating and reviewCount unchanged when updating place`() {
+        // Given
+        val placeId = UUID.randomUUID()
+        val existingPlace = Place(
+            id = placeId,
+            name = "Place",
+            address = "Address",
+            city = "City",
+            priceRange = PriceRange.MEDIUM,
+            averageRating = 4.5f,
+            reviewCount = 25,
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdatePlaceRequestDto(
+            name = "Updated Place",
+            address = "Updated Address",
+            city = "Updated City",
+            priceRange = PriceRange.CHEAP
+        )
+
+        val updatedPlace = existingPlace.copy(
+            name = updateRequest.name,
+            address = updateRequest.address,
+            city = updateRequest.city,
+            priceRange = updateRequest.priceRange
+        )
+
+        every { placeRepository.findById(placeId) } returns Optional.of(existingPlace)
+        every { placeRepository.save(any()) } returns updatedPlace
+
+        // When
+        val result = placeService.updatePlace(placeId, updateRequest)
+
+        // Then
+        assertEquals(4.5f, result.averageRating)
+        assertEquals(25, result.reviewCount)
+    }
+
+    @Test
+    fun `should delete place successfully`() {
+        // Given
+        val placeId = UUID.randomUUID()
+
+        every { placeRepository.existsById(placeId) } returns true
+        every { placeRepository.deleteById(placeId) } just Runs
+
+        // When
+        placeService.deletePlace(placeId)
+
+        // Then
+        verify { placeRepository.deleteById(placeId) }
+    }
+
+    @Test
+    fun `should throw exception when deleting non-existing place`() {
+        // Given
+        val placeId = UUID.randomUUID()
+
+        every { placeRepository.existsById(placeId) } returns false
+
+        // When + Then
+        assertThrows<NoSuchElementException> {
+            placeService.deletePlace(placeId)
+        }
     }
 
 }
