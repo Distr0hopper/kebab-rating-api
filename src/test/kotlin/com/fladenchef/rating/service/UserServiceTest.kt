@@ -1,14 +1,19 @@
 package com.fladenchef.rating.service
 
 import com.fladenchef.rating.model.dto.CreateUserRequestDto
+import com.fladenchef.rating.model.dto.UpdateUserRequestDto
 import com.fladenchef.rating.model.entity.User
 import com.fladenchef.rating.repository.UserRepository
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.Instant
+import java.util.Optional
 import java.util.UUID
 
 class UserServiceTest {
@@ -91,6 +96,178 @@ class UserServiceTest {
         // When + Then
         assertThrows<IllegalArgumentException> {
             userService.createUser(request)
+        }
+    }
+
+    @Test
+    fun `should update user successfully`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val existingUser = User(
+            id = userId,
+            username = "oldusername",
+            email = "old@example.com",
+            passwordHash = "hash123",
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateUserRequestDto(
+            username = "newusername",
+            email = "new@example.com"
+        )
+
+        val updatedUser = existingUser.copy(
+            username = updateRequest.username,
+            email = updateRequest.email
+        )
+
+        // Mock repository behavior
+        every { userRepository.findById(userId) } returns Optional.of(existingUser)
+        every { userRepository.existsByUsername("newusername") } returns false
+        every { userRepository.findByEmail("new@example.com") } returns null
+        every { userRepository.save(any()) } returns updatedUser
+
+        // When
+        val result = userService.updateUser(userId, updateRequest)
+
+        // Then
+        assertEquals("newusername", result.username)
+        assertEquals("new@example.com", result.email)
+        verify { userRepository.save(any()) }
+    }
+
+    @Test
+    fun `should throw exception when updating user with existing username`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val existingUser = User(
+            id = userId,
+            username = "oldusername",
+            email = "old@example.com",
+            passwordHash = "hash123",
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateUserRequestDto(
+            username = "takenusername",
+            email = "new@example.com"
+        )
+
+        every { userRepository.findById(userId) } returns Optional.of(existingUser)
+        every { userRepository.existsByUsername("takenusername") } returns true
+
+        // When + Then
+        assertThrows<IllegalArgumentException> {
+            userService.updateUser(userId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should throw exception when updating user with existing email`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val existingUser = User(
+            id = userId,
+            username = "oldusername",
+            email = "old@example.com",
+            passwordHash = "hash123",
+            createdAt = Instant.now()
+        )
+
+        val otherUser = User(
+            id = UUID.randomUUID(),
+            username = "otheruser",
+            email = "taken@example.com",
+            passwordHash = "hash456",
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateUserRequestDto(
+            username = "newusername",
+            email = "taken@example.com"
+        )
+
+        every { userRepository.findById(userId) } returns Optional.of(existingUser)
+        every { userRepository.existsByUsername("newusername") } returns false
+        every { userRepository.findByEmail("taken@example.com") } returns otherUser
+
+        // When + Then
+        assertThrows<IllegalArgumentException> {
+            userService.updateUser(userId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should allow updating user with same username and email`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val existingUser = User(
+            id = userId,
+            username = "sameusername",
+            email = "same@example.com",
+            passwordHash = "hash123",
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateUserRequestDto(
+            username = "sameusername",
+            email = "same@example.com"
+        )
+
+        every { userRepository.findById(userId) } returns Optional.of(existingUser)
+        every { userRepository.existsByUsername("sameusername") } returns true
+        every { userRepository.findByEmail("same@example.com") } returns existingUser
+        every { userRepository.save(any()) } returns existingUser
+
+        // When
+        val result = userService.updateUser(userId, updateRequest)
+
+        // Then
+        assertEquals("sameusername", result.username)
+        assertEquals("same@example.com", result.email)
+    }
+
+    @Test
+    fun `should throw exception when updating non-existing user`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val updateRequest = UpdateUserRequestDto(
+            username = "newusername",
+            email = "new@example.com"
+        )
+
+        every { userRepository.findById(userId) } returns Optional.empty()
+
+        // When + Then
+        assertThrows<IllegalArgumentException> {
+            userService.updateUser(userId, updateRequest)
+        }
+    }
+
+
+    @Test
+    fun `should delete user successfully`() {
+        // Given
+        val userId = UUID.randomUUID()
+
+        every { userRepository.existsById(userId) } returns true
+        every { userRepository.deleteById(userId) } just Runs
+        // When
+        userService.deleteUser(userId)
+        // Then
+        verify { userRepository.deleteById(userId) }
+    }
+
+    @Test
+    fun `should throw exception when deleting non-existing user`() {
+        // Given
+        val userId = UUID.randomUUID()
+
+        every { userRepository.existsById(userId) } returns false
+
+        // When + Then
+        assertThrows<IllegalArgumentException> {
+            userService.deleteUser(userId)
         }
     }
 }
