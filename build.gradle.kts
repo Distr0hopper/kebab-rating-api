@@ -1,9 +1,10 @@
 plugins {
-	kotlin("jvm") version "1.9.25"
-	kotlin("plugin.spring") version "1.9.25"
-	id("org.springframework.boot") version "3.5.7"
-	id("io.spring.dependency-management") version "1.1.7"
-	kotlin("plugin.jpa") version "1.9.25"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    id("org.springframework.boot") version "3.5.7"
+    id("io.spring.dependency-management") version "1.1.7"
+    kotlin("plugin.jpa") version "1.9.25"
+    jacoco
 }
 
 group = "com.fladenchef"
@@ -11,50 +12,70 @@ version = "0.0.1-SNAPSHOT"
 description = "Coding Challange Fladenchef"
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     // Swagger/OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-	testRuntimeOnly("com.h2database:h2") // Keep h2 for tests
-	runtimeOnly("org.postgresql:postgresql") // Postgre for runtime
+    testRuntimeOnly("com.h2database:h2") // Keep h2 for tests
+    runtimeOnly("org.postgresql:postgresql") // Postgre for runtime
     // For testing
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     //testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
     //testImplementation("org.mockito:mockito-core:5.7.0")
     // Use MockK instead of mockito because its better
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
 
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
-	compilerOptions {
-		freeCompilerArgs.addAll("-Xjsr305=strict")
-	}
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
 }
 
 allOpen {
-	annotation("jakarta.persistence.Entity")
-	annotation("jakarta.persistence.MappedSuperclass")
-	annotation("jakarta.persistence.Embeddable")
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport) // Report wird automatisch nach Tests erstellt
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // Tests müssen vor dem Report laufen
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.70".toBigDecimal() // 70% Coverage-Minimum
+            }
+        }
+    }
 }
