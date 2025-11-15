@@ -1,6 +1,7 @@
 package com.fladenchef.rating.service
 
 import com.fladenchef.rating.model.dto.CreateKebabVariantRequestDto
+import com.fladenchef.rating.model.dto.UpdateKebabVariantRequestDto
 import com.fladenchef.rating.model.entity.*
 import com.fladenchef.rating.model.enums.Ingredients
 import com.fladenchef.rating.model.enums.PriceRange
@@ -648,5 +649,274 @@ class KebabVariantServiceTest {
         val result = kebabVariantService.getTopRatedKebabsInCity("Hamburg")
 
         assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `should update kebab variant successfully`() {
+        val kebabId = UUID.randomUUID()
+        val existingKebab = KebabVariant(
+            id = kebabId,
+            place = place,
+            name = "Old Döner",
+            description = "Old description",
+            price = BigDecimal("5.00"),
+            breadType = breadType,
+            meatType = meatType,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet(),
+            averageRating = 4.0f,
+            createdAt = Instant.now()
+        )
+
+        val newBreadTypeId = UUID.randomUUID()
+        val newMeatTypeId = UUID.randomUUID()
+        val newBreadType = BreadType(id = newBreadTypeId, name = "Dürüm")
+        val newMeatType = MeatType(id = newMeatTypeId, name = "Rind")
+
+        val updateRequest = UpdateKebabVariantRequestDto(
+            name = "Updated Döner",
+            description = "New description",
+            price = BigDecimal("7.50"),
+            breadTypeId = newBreadTypeId,
+            meatTypeId = newMeatTypeId,
+            isVegetarian = false,
+            spicy = true,
+            sauces = setOf(Sauces.HOT_SAUCE),
+            ingredients = setOf(Ingredients.SALAD, Ingredients.TOMATO)
+        )
+
+        val updatedKebab = existingKebab.copy(
+            name = updateRequest.name,
+            description = updateRequest.description,
+            price = updateRequest.price,
+            breadType = newBreadType,
+            meatType = newMeatType,
+            isVegetarian = updateRequest.isVegetarian,
+            spicy = updateRequest.spicy,
+            sauces = updateRequest.sauces,
+            ingredients = updateRequest.ingredients
+        )
+
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.of(existingKebab)
+        every { breadTypeRepository.findById(newBreadTypeId) } returns Optional.of(newBreadType)
+        every { meatTypeRepository.findById(newMeatTypeId) } returns Optional.of(newMeatType)
+        every { kebabVariantRepository.save(any()) } returns updatedKebab
+
+        val result = kebabVariantService.updateKebabVariant(kebabId, updateRequest)
+
+        assertNotNull(result)
+        assertEquals("Updated Döner", result.name)
+        assertEquals("New description", result.description)
+        assertEquals(BigDecimal("7.50"), result.price)
+        assertEquals(true, result.spicy)
+        verify { kebabVariantRepository.save(any()) }
+    }
+
+    @Test
+    fun `should throw exception when updating non-existing kebab`() {
+        val kebabId = UUID.randomUUID()
+        val updateRequest = UpdateKebabVariantRequestDto(
+            name = "Test",
+            description = "Test",
+            price = BigDecimal("5.00"),
+            breadTypeId = breadTypeId,
+            meatTypeId = meatTypeId,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet()
+        )
+
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.empty()
+
+        assertThrows<NoSuchElementException> {
+            kebabVariantService.updateKebabVariant(kebabId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should throw exception when updating kebab with non-existing bread type`() {
+        val kebabId = UUID.randomUUID()
+        val existingKebab = KebabVariant(
+            id = kebabId,
+            place = place,
+            name = "Döner",
+            description = "Test",
+            price = BigDecimal("5.00"),
+            breadType = breadType,
+            meatType = meatType,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet(),
+            averageRating = 4.0f,
+            createdAt = Instant.now()
+        )
+
+        val newBreadTypeId = UUID.randomUUID()
+        val updateRequest = UpdateKebabVariantRequestDto(
+            name = "Test",
+            description = "Test",
+            price = BigDecimal("5.00"),
+            breadTypeId = newBreadTypeId,
+            meatTypeId = meatTypeId,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet()
+        )
+
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.of(existingKebab)
+        every { breadTypeRepository.findById(newBreadTypeId) } returns Optional.empty()
+
+        assertThrows<NoSuchElementException> {
+            kebabVariantService.updateKebabVariant(kebabId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should throw exception when updating kebab with non-existing meat type`() {
+        val kebabId = UUID.randomUUID()
+        val existingKebab = KebabVariant(
+            id = kebabId,
+            place = place,
+            name = "Döner",
+            description = "Test",
+            price = BigDecimal("5.00"),
+            breadType = breadType,
+            meatType = meatType,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet(),
+            averageRating = 4.0f,
+            createdAt = Instant.now()
+        )
+
+        val newMeatTypeId = UUID.randomUUID()
+        val updateRequest = UpdateKebabVariantRequestDto(
+            name = "Test",
+            description = "Test",
+            price = BigDecimal("5.00"),
+            breadTypeId = breadTypeId,
+            meatTypeId = newMeatTypeId,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet()
+        )
+
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.of(existingKebab)
+        every { breadTypeRepository.findById(breadTypeId) } returns Optional.of(breadType)
+        every { meatTypeRepository.findById(newMeatTypeId) } returns Optional.empty()
+
+        assertThrows<NoSuchElementException> {
+            kebabVariantService.updateKebabVariant(kebabId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should throw exception when updating kebab with zero price`() {
+        val kebabId = UUID.randomUUID()
+        val existingKebab = KebabVariant(
+            id = kebabId,
+            place = place,
+            name = "Döner",
+            description = "Test",
+            price = BigDecimal("5.00"),
+            breadType = breadType,
+            meatType = meatType,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet(),
+            averageRating = 4.0f,
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateKebabVariantRequestDto(
+            name = "Test",
+            description = "Test",
+            price = BigDecimal.ZERO,
+            breadTypeId = breadTypeId,
+            meatTypeId = meatTypeId,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet()
+        )
+
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.of(existingKebab)
+        every { breadTypeRepository.findById(breadTypeId) } returns Optional.of(breadType)
+        every { meatTypeRepository.findById(meatTypeId) } returns Optional.of(meatType)
+
+        assertThrows<IllegalArgumentException> {
+            kebabVariantService.updateKebabVariant(kebabId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should throw exception when updating kebab with negative price`() {
+        val kebabId = UUID.randomUUID()
+        val existingKebab = KebabVariant(
+            id = kebabId,
+            place = place,
+            name = "Döner",
+            description = "Test",
+            price = BigDecimal("5.00"),
+            breadType = breadType,
+            meatType = meatType,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet(),
+            averageRating = 4.0f,
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateKebabVariantRequestDto(
+            name = "Test",
+            description = "Test",
+            price = BigDecimal("-5.00"),
+            breadTypeId = breadTypeId,
+            meatTypeId = meatTypeId,
+            isVegetarian = false,
+            spicy = false,
+            sauces = emptySet(),
+            ingredients = emptySet()
+        )
+
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.of(existingKebab)
+        every { breadTypeRepository.findById(breadTypeId) } returns Optional.of(breadType)
+        every { meatTypeRepository.findById(meatTypeId) } returns Optional.of(meatType)
+
+        assertThrows<IllegalArgumentException> {
+            kebabVariantService.updateKebabVariant(kebabId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should delete kebab variant successfully`() {
+        val kebabId = UUID.randomUUID()
+
+        every { kebabVariantRepository.existsById(kebabId) } returns true
+        every { kebabVariantRepository.deleteById(kebabId) } just Runs
+
+        kebabVariantService.deleteKebabVariant(kebabId)
+
+        verify { kebabVariantRepository.deleteById(kebabId) }
+    }
+
+    @Test
+    fun `should throw exception when deleting non-existing kebab`() {
+        val kebabId = UUID.randomUUID()
+
+        every { kebabVariantRepository.existsById(kebabId) } returns false
+
+        assertThrows<NoSuchElementException> {
+            kebabVariantService.deleteKebabVariant(kebabId)
+        }
     }
 }
