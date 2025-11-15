@@ -8,12 +8,10 @@ import com.fladenchef.rating.repository.PlaceRepository
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.Instant
 import java.util.UUID
-import kotlin.collections.get
 
 class PlaceServiceTest {
 
@@ -75,16 +73,7 @@ class PlaceServiceTest {
         // Given
         val nonExistingId = UUID.randomUUID()
 
-        val existingPlace = Place(
-            id = UUID.randomUUID(),
-            name = "Existing Place",
-            address = "456 Existing St",
-            city = "Existing City",
-            priceRange = PriceRange.EXPENSIVE,
-            averageRating = 4.5f,
-            reviewCount = 10,
-            createdAt = Instant.now(),
-        )
+        // findById returns nothing for non-existing id
         every { placeRepository.findById(nonExistingId) } returns java.util.Optional.empty()
 
         // When + Then
