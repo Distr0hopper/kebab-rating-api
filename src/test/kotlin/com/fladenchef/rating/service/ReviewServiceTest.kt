@@ -1,6 +1,7 @@
 package com.fladenchef.rating.service
 
 import com.fladenchef.rating.model.dto.CreateReviewRequestDto
+import com.fladenchef.rating.model.dto.UpdateReviewRequestDto
 import com.fladenchef.rating.model.entity.BreadType
 import com.fladenchef.rating.model.entity.KebabVariant
 import com.fladenchef.rating.model.entity.MeatType
@@ -350,5 +351,158 @@ class ReviewServiceTest {
         val result = reviewService.getReviewsByKebab(kebabId)
 
         assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `should update review successfully`() {
+        val reviewId = UUID.randomUUID()
+        val existingReview = Review(
+            id = reviewId,
+            user = user,
+            kebabVariant = kebabVariant,
+            rating = 3,
+            title = "Old Title",
+            comment = "Old comment",
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateReviewRequestDto(
+            rating = 5,
+            title = "Updated Title",
+            comment = "Updated comment"
+        )
+
+        val updatedReview = existingReview.copy(
+            rating = updateRequest.rating,
+            title = updateRequest.title,
+            comment = updateRequest.comment
+        )
+
+        every { reviewRepository.findById(reviewId) } returns Optional.of(existingReview)
+        every { reviewRepository.save(any()) } returns updatedReview
+        every { ratingCalculationService.updateKebabRating(kebabId) } just Runs
+        every { ratingCalculationService.updatePlaceRating(placeId) } just Runs
+
+        val result = reviewService.updateReview(reviewId, updateRequest)
+
+        assertNotNull(result)
+        assertEquals(5, result.rating)
+        assertEquals("Updated Title", result.title)
+        assertEquals("Updated comment", result.comment)
+        verify { reviewRepository.save(any()) }
+        verify { ratingCalculationService.updateKebabRating(kebabId) }
+        verify { ratingCalculationService.updatePlaceRating(placeId) }
+    }
+
+    @Test
+    fun `should throw exception when updating non-existing review`() {
+        val reviewId = UUID.randomUUID()
+        val updateRequest = UpdateReviewRequestDto(
+            rating = 5,
+            title = "Title",
+            comment = "Comment"
+        )
+
+        every { reviewRepository.findById(reviewId) } returns Optional.empty()
+
+        assertThrows<NoSuchElementException> {
+            reviewService.updateReview(reviewId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `should delete review successfully`() {
+        val reviewId = UUID.randomUUID()
+        val review = Review(
+            id = reviewId,
+            user = user,
+            kebabVariant = kebabVariant,
+            rating = 5,
+            title = "Test",
+            comment = "Test comment",
+            createdAt = Instant.now()
+        )
+
+        every { reviewRepository.findById(reviewId) } returns Optional.of(review)
+        every { reviewRepository.deleteById(reviewId) } just Runs
+        every { ratingCalculationService.updateKebabRating(kebabId) } just Runs
+        every { ratingCalculationService.updatePlaceRating(placeId) } just Runs
+
+        reviewService.deleteReview(reviewId)
+
+        verify { reviewRepository.deleteById(reviewId) }
+        verify { ratingCalculationService.updateKebabRating(kebabId) }
+        verify { ratingCalculationService.updatePlaceRating(placeId) }
+    }
+
+    @Test
+    fun `should throw exception when deleting non-existing review`() {
+        val reviewId = UUID.randomUUID()
+
+        every { reviewRepository.findById(reviewId) } returns Optional.empty()
+
+        assertThrows<NoSuchElementException> {
+            reviewService.deleteReview(reviewId)
+        }
+    }
+
+    @Test
+    fun `should recalculate ratings after review update`() {
+        val reviewId = UUID.randomUUID()
+        val existingReview = Review(
+            id = reviewId,
+            user = user,
+            kebabVariant = kebabVariant,
+            rating = 3,
+            title = "Title",
+            comment = "Comment",
+            createdAt = Instant.now()
+        )
+
+        val updateRequest = UpdateReviewRequestDto(
+            rating = 5,
+            title = "New Title",
+            comment = "New Comment"
+        )
+
+        val updatedReview = existingReview.copy(
+            rating = updateRequest.rating,
+            title = updateRequest.title,
+            comment = updateRequest.comment
+        )
+
+        every { reviewRepository.findById(reviewId) } returns Optional.of(existingReview)
+        every { reviewRepository.save(any()) } returns updatedReview
+        every { ratingCalculationService.updateKebabRating(kebabId) } just Runs
+        every { ratingCalculationService.updatePlaceRating(placeId) } just Runs
+
+        reviewService.updateReview(reviewId, updateRequest)
+
+        verify(exactly = 1) { ratingCalculationService.updateKebabRating(kebabId) }
+        verify(exactly = 1) { ratingCalculationService.updatePlaceRating(placeId) }
+    }
+
+    @Test
+    fun `should recalculate ratings after review deletion`() {
+        val reviewId = UUID.randomUUID()
+        val review = Review(
+            id = reviewId,
+            user = user,
+            kebabVariant = kebabVariant,
+            rating = 5,
+            title = "Test",
+            comment = "Test comment",
+            createdAt = Instant.now()
+        )
+
+        every { reviewRepository.findById(reviewId) } returns Optional.of(review)
+        every { reviewRepository.deleteById(reviewId) } just Runs
+        every { ratingCalculationService.updateKebabRating(kebabId) } just Runs
+        every { ratingCalculationService.updatePlaceRating(placeId) } just Runs
+
+        reviewService.deleteReview(reviewId)
+
+        verify(exactly = 1) { ratingCalculationService.updateKebabRating(kebabId) }
+        verify(exactly = 1) { ratingCalculationService.updatePlaceRating(placeId) }
     }
 }
