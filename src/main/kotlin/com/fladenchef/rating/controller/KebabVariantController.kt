@@ -2,15 +2,18 @@ package com.fladenchef.rating.controller
 
 import com.fladenchef.rating.model.dto.CreateKebabVariantRequestDto
 import com.fladenchef.rating.model.dto.KebabVariantResponseDto
+import com.fladenchef.rating.model.dto.UpdateKebabVariantRequestDto
 import com.fladenchef.rating.service.KebabVariantService
 import com.fladenchef.rating.service.PlaceService
 import jakarta.validation.Valid
 import org.aspectj.apache.bcel.Repository
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -70,5 +73,22 @@ class KebabVariantController(
             else -> kebabVariantService.getTopRatedKebabs(limit)
         }
         return ResponseEntity.ok(kebabs)
+    }
+
+    // PUT for updating a kebab
+    @PutMapping("/{id}")
+    fun updateKebab(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: UpdateKebabVariantRequestDto
+    ): ResponseEntity<KebabVariantResponseDto> {
+        val kebab = kebabVariantService.updateKebabVariant(id, request)
+        return ResponseEntity.ok(kebab)
+    }
+
+    // DELETE for deleting a kebab
+    @DeleteMapping("/{id}")
+    fun deleteKebab(@PathVariable id: UUID): ResponseEntity<Void> {
+        kebabVariantService.deleteKebabVariant(id)
+        return ResponseEntity.noContent().build()
     }
 }
