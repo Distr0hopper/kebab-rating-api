@@ -78,17 +78,23 @@ POST   /api/reviews
 - ✅ Top-rated kebabs
 - ⏳ User authentication (planned)
 
-### User Authentication Concept
+### User Authentication Concept (planned)
 - JWT-based authentication
 - User registration and login endpoints
 - Role-based access control (admin, user)
 - for more details, see [AUTH_CONCEPT.md](docs/AUTH_CONCEPT.md)
 
-### Database Migration Concept
+### Database Migration Concept (planned)
 - Flyway for database migrations
 - Versioned SQL scripts for schema changes
 - Automatic migration on application startup
 - for more details, see [DATABASE_MIGRATION.md](docs/DATABASE_MIGRATION.md)
+
+### Global Exception Handling (planned)
+- Centralized exception handling with `@RestControllerAdvice`
+- Custom error responses for validation, not found, server errors
+- Consistent error format across API
+- for more details, see [EXCEPTION_HANDLING.md](docs/EXCEPTION_HANDLING.md)
 ## 🧪 Testing
 ```bash
 # Run all tests
