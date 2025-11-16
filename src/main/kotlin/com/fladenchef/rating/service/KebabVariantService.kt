@@ -9,6 +9,7 @@ import com.fladenchef.rating.repository.BreadTypeRepository
 import com.fladenchef.rating.repository.KebabVariantRepository
 import com.fladenchef.rating.repository.MeatTypeRepository
 import com.fladenchef.rating.repository.PlaceRepository
+import com.fladenchef.rating.repository.ReviewRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -20,12 +21,13 @@ class KebabVariantService (
     private val kebabVariantRepository: KebabVariantRepository,
     private val placeRepository: PlaceRepository,
     private val breadTypeRepository: BreadTypeRepository,
-    private val meatTypeRepository: MeatTypeRepository
+    private val meatTypeRepository: MeatTypeRepository,
+    private val reviewRepository: ReviewRepository
 ){
 
     /*
-        * Create-Operations
-     */
+            * Create-Operations
+         */
     fun createKebabVariant(request: CreateKebabVariantRequestDto): KebabVariantResponseDto{
         // Load entities
         var place = placeRepository.findById(request.placeId)
@@ -154,10 +156,12 @@ class KebabVariantService (
      */
     fun deleteKebabVariant(id: UUID) {
         // Check if kebab exists
-        if (!kebabVariantRepository.existsById(id)) {
+        val kebab = kebabVariantRepository.findById(id).orElseThrow {
             throw NoSuchElementException("Kebab variant with id $id not found.")
         }
 
+        // Need to delete associated reviews first due to foreign key constraints
+        reviewRepository.deleteAllByKebabVariant(kebab)
         kebabVariantRepository.deleteById(id)
     }
 }

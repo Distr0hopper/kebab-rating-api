@@ -48,7 +48,8 @@ class KebabVariantServiceTest {
             kebabVariantRepository,
             placeRepository,
             breadTypeRepository,
-            meatTypeRepository
+            meatTypeRepository,
+            reviewRepository
         )
 
         placeId = UUID.randomUUID()
