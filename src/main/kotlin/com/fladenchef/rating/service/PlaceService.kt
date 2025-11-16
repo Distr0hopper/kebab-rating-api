@@ -5,7 +5,9 @@ import com.fladenchef.rating.model.dto.CreatePlaceRequestDto
 import com.fladenchef.rating.model.dto.PlaceResponseDto
 import com.fladenchef.rating.model.dto.UpdatePlaceRequestDto
 import com.fladenchef.rating.model.entity.Place
+import com.fladenchef.rating.repository.KebabVariantRepository
 import com.fladenchef.rating.repository.PlaceRepository
+import com.fladenchef.rating.repository.ReviewRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -14,11 +16,13 @@ import java.util.UUID
 @Service
 @Transactional
 class PlaceService (
-    private val placeRepository: PlaceRepository // Need to use the repository bean for database access
+    private val placeRepository: PlaceRepository, // Need to use the repository bean for database access
+    private val kebabVariantRepository: KebabVariantRepository,
+    private val reviewRepository: ReviewRepository
 ){
     /*
-     * Create-Operations
-     */
+             * Create-Operations
+             */
     fun createPlace(request: CreatePlaceRequestDto): PlaceResponseDto {
         val place = Place(
             name = request.name,
@@ -81,10 +85,20 @@ class PlaceService (
      */
     fun deletePlace(id: UUID) {
         // Check if place exists
-        if (!placeRepository.existsById(id)) {
+        val place = placeRepository.findById(id).orElseThrow {
             throw NoSuchElementException("Place with id $id does not exist")
         }
 
+        // Find all KebabVariants associated with the place
+        val kebabVariants = kebabVariantRepository.findByPlace(place)
+
+        // Delete all reviews associated with each kebab variant
+        kebabVariants.forEach {variant -> reviewRepository.deleteAllByKebabVariant(variant)}
+
+        // Delete all kebab variants associated with the place
+        kebabVariantRepository.deleteAllByPlace(place)
+
+        // Finally, delete the place
         placeRepository.deleteById(id)
     }
 }

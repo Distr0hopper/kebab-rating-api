@@ -17,7 +17,7 @@ import java.util.UUID
 class PlaceServiceTest {
 
     private val placeRepository: PlaceRepository = mockk()
-    private val placeService = PlaceService(placeRepository)
+    private val placeService = PlaceService(placeRepository, kebabVariantRepository, reviewRepository)
 
     @Test
     fun `should create place successfully`() {

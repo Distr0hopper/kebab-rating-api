@@ -32,4 +32,7 @@ interface KebabVariantRepository : JpaRepository<KebabVariant, UUID> {
         ORDER BY k.averageRating DESC 
     """)
     fun findTopRatedInCity(city: String): List<KebabVariant>
+
+    // Delete all places associated with a kebab variant
+    fun deleteAllByPlace(place: Place)
 }
