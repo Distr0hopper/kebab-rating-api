@@ -68,12 +68,11 @@ class PlaceService (
             throw NoSuchElementException("Place with id $id does not exist")
         }
 
-        // Create updated place (data classes are immutable)
         val updatedPlace = existingPlace.copy(
-            name = request.name,
-            address = request.address,
-            city = request.city,
-            priceRange = request.priceRange
+            name = request.name ?: existingPlace.name,
+            address = request.address ?: existingPlace.address,
+            city = request.city ?: existingPlace.city,
+            priceRange = request.priceRange ?: existingPlace.priceRange
         )
 
         val savedPlace = placeRepository.save(updatedPlace)

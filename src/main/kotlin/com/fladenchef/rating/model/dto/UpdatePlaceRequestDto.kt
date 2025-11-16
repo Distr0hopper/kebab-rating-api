@@ -5,17 +5,14 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 data class UpdatePlaceRequestDto(
-    @field:NotBlank(message = "Name must not be blank")
     @field:Size(max = 100, message = "Name too long")
-    val name: String,
+    val name: String? = null,
 
-    @field:NotBlank(message = "Address must not be blank")
     @field:Size(max = 255, message = "Address too long")
-    val address: String,
+    val address: String? = null,
 
-    @field:NotBlank(message = "City must not be blank")
     @field:Size(max = 100, message = "City name too long")
-    val city: String,
+    val city: String? = null,
 
-    val priceRange: PriceRange
+    val priceRange: PriceRange? = null
 )
