@@ -78,6 +78,17 @@ POST   /api/reviews
 - ✅ Top-rated kebabs
 - ⏳ User authentication (planned)
 
+### User Authentication Concept
+- JWT-based authentication
+- User registration and login endpoints
+- Role-based access control (admin, user)
+- for more details, see [AUTH_CONCEPT.md](docs/AUTH_CONCEPT.md)
+
+### Database Migration Concept
+- Flyway for database migrations
+- Versioned SQL scripts for schema changes
+- Automatic migration on application startup
+- for more details, see [DATABASE_MIGRATION.md](docs/DATABASE_MIGRATION.md)
 ## 🧪 Testing
 ```bash
 # Run all tests
