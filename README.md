@@ -12,8 +12,10 @@ Backend API for kebab rating platform - Spring Boot + Kotlin
 ## 🚀 Tech Stack
 
 - **Language:** Kotlin
+  - Why?: Null safety and data classes for concise models (DTOs)
 - **Framework:** Spring Boot 3.5.1
 - **Database:** PostgreSQL / H2
+  - Why?: Reliable relational DB for structured data
 - **Build:** Gradle
 
 ## 📊 Database Model
@@ -22,7 +24,8 @@ The system centers around `Place` (kebab shops) that offer multiple `KebabVarian
 ![ER Diagram](docs/images/ER-Diagram_Fladenchef.png)
 
 ## 🏗️ Architecture
-The Architecture follows a layered approach.
+The Architecture follows a layered approach because of the clear separation of concerns and the easy testability it provides 
+with dependency injection.
 ![Architecture Diagram](docs/images/Architecture-Diagram_Fladenchef.png)
 
 ## 🚀 Getting Started
