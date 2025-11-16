@@ -8,29 +8,25 @@ import java.util.*
 
 
 data class UpdateKebabVariantRequestDto(
-    @field:NotNull(message = "Name must not be blank")
     @field:Size(max = 100, message = "Name too long")
-    val name: String,
+    val name: String? = null,
 
     @field:Size(max = 500, message = "Description too long")
     val description: String? = null,
 
-    @field:NotNull(message = "Price must not be null")
     @field:DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
-    val price: BigDecimal,
+    val price: BigDecimal? = null,
 
-    @field:NotNull(message = "BreadType ID must not be null")
-    val breadTypeId: UUID,
+    val breadTypeId: UUID? = null,
 
-    @field:NotNull(message = "MeatType ID must not be null")
-    val meatTypeId: UUID,
+    val meatTypeId: UUID? = null,
 
-    val isVegetarian: Boolean = false,
+    val isVegetarian: Boolean? = null,
 
-    val spicy: Boolean = false,
+    val spicy: Boolean? = null,
 
-    val sauces: Set<Sauces> = emptySet(),
+    val sauces: Set<Sauces>? = null,
 
-    val ingredients: Set<Ingredients> = emptySet()
+    val ingredients: Set<Ingredients>? = null
 
     )

@@ -12,8 +12,10 @@ import com.fladenchef.rating.repository.PlaceRepository
 import com.fladenchef.rating.repository.ReviewRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
+import kotlin.text.compareTo
 
 @Service
 @Transactional
@@ -122,29 +124,36 @@ class KebabVariantService (
             throw NoSuchElementException("Kebab variant with id $id not found.")
         }
 
-        // Load new entities
-        val breadType = breadTypeRepository.findById(request.breadTypeId)
-            .orElseThrow { throw NoSuchElementException("Bread type not found with id ${request.breadTypeId}") }
+        // Load new entities only when requested
+        val breadType = request.breadTypeId?.let {
+            breadTypeRepository.findById(it).orElseThrow {
+                throw NoSuchElementException("Bread type not found with id $it")
+            }
+        } ?: existingKebab.breadType
 
-        val meatType = meatTypeRepository.findById(request.meatTypeId)
-            .orElseThrow { throw NoSuchElementException("Meat type not found with id ${request.meatTypeId}") }
+        val meatType = request.meatTypeId?.let {
+            meatTypeRepository.findById(it).orElseThrow {
+                throw NoSuchElementException("Meat type not found with id $it")
+            }
+        } ?: existingKebab.meatType
 
-        // Validation: Price positive?
-        if (request.price <= java.math.BigDecimal.ZERO) {
-            throw IllegalArgumentException("Price must be positive.")
+        // Validation: Only if price is being updated
+        request.price?.let {
+            if (it <= BigDecimal.ZERO) {
+                throw IllegalArgumentException("Price must be positive.")
+            }
         }
 
-        // Create updated kebab (data classes are immutable)
         val updatedKebab = existingKebab.copy(
-            name = request.name,
-            description = request.description,
-            price = request.price,
+            name = request.name ?: existingKebab.name,
+            description = request.description ?: existingKebab.description,
+            price = request.price ?: existingKebab.price,
             breadType = breadType,
             meatType = meatType,
-            isVegetarian = request.isVegetarian,
-            spicy = request.spicy,
-            sauces = request.sauces,
-            ingredients = request.ingredients
+            isVegetarian = request.isVegetarian ?: existingKebab.isVegetarian,
+            spicy = request.spicy ?: existingKebab.spicy,
+            sauces = request.sauces ?: existingKebab.sauces,
+            ingredients = request.ingredients ?: existingKebab.ingredients
         )
 
         val savedKebab = kebabVariantRepository.save(updatedKebab)
