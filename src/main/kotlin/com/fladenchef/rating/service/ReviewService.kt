@@ -97,16 +97,18 @@ class ReviewService (
 
         // Create updated review (data classes are immutable)
         val updatedReview = existingReview.copy(
-            rating = request.rating,
-            title = request.title,
-            comment = request.comment
+            rating = request.rating ?: existingReview.rating,
+            title = request.title ?: existingReview.title,
+            comment = request.comment ?: existingReview.comment
         )
 
         val savedReview = reviewRepository.save(updatedReview)
 
-        // Recalculate ratings after update
-        ratingCalculationService.updateKebabRating(existingReview.kebabVariant.id!!)
-        ratingCalculationService.updatePlaceRating(existingReview.kebabVariant.place.id!!)
+        // Recalculate ratings after update (only if rating changed)
+        if (request.rating != null && request.rating != existingReview.rating) {
+            ratingCalculationService.updateKebabRating(existingReview.kebabVariant.id!!)
+            ratingCalculationService.updatePlaceRating(existingReview.kebabVariant.place.id!!)
+        }
 
         return savedReview.toDto()
     }
