@@ -47,6 +47,13 @@ docker-compose up -d
 ./gradlew bootRun --args='--spring.profiles.active=postgres'
 ```
 
+**To start the frontend**
+```bash
+cd frontend
+npm run dev
+# Open http://localhost:PORT on the specified port (default 5173)
+```
+
 ### Access
 
 - **API:** http://localhost:8080
