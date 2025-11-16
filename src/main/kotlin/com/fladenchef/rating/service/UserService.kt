@@ -7,6 +7,7 @@ import com.fladenchef.rating.model.dto.UserResponseDto
 import com.fladenchef.rating.repository.UserRepository
 import jakarta.transaction.Transactional
 import com.fladenchef.rating.model.entity.User
+import com.fladenchef.rating.repository.ReviewRepository
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -14,14 +15,15 @@ import java.util.UUID
 @Transactional
 class UserService (
     private val userRepository: UserRepository,
+    private val reviewRepository: ReviewRepository,
 ) {
     /*
-        * CREATE operation *
-        Creates a new user after validating the input data.
-        Validations:
-        - Username must be unique.
-        - Email must be unique.
-     */
+            * CREATE operation *
+            Creates a new user after validating the input data.
+            Validations:
+            - Username must be unique.
+            - Email must be unique.
+         */
     fun createUser(request: CreateUserRequestDto): UserResponseDto {
         // Validation: Is username already taken?
         if (userRepository.existsByUsername(request.username)) {
@@ -107,10 +109,14 @@ class UserService (
      */
     fun deleteUser(id: UUID) {
         // Check if user exists
-        if (!userRepository.existsById(id)) {
-            throw IllegalArgumentException("User with id $id not found.")
+        val user = userRepository.findById(id).orElseThrow {
+            IllegalArgumentException("User with id $id not found.")
         }
 
+        // First delete all reviews associated with the user
+        reviewRepository.deleteAllByUser(user)
+
+        // Then delete the user
         userRepository.deleteById(id)
     }
 

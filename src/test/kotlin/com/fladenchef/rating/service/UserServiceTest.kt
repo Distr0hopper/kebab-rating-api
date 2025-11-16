@@ -18,7 +18,7 @@ import java.util.UUID
 
 class UserServiceTest {
     private val userRepository = mockk<UserRepository>()
-    private val userService = UserService(userRepository)
+    private val userService = UserService(userRepository, reviewRepository)
 
     @Test
     fun `should create user successfully`() {

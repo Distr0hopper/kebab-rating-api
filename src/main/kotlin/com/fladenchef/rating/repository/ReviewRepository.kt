@@ -27,4 +27,6 @@ interface ReviewRepository : JpaRepository<Review, UUID> {
     fun findByRatingGreaterThanEqual(minRating: Float): List<Review>
 
     fun deleteAllByKebabVariant(kebabVariant: KebabVariant)
+
+    fun deleteAllByUser(user: User)
 }
