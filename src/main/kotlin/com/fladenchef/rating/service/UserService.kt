@@ -80,23 +80,34 @@ class UserService (
             IllegalArgumentException("User with id $id not found.")
         }
 
-        // Validation: If username is being changed, check if new username is already taken
-        if (request.username != user.username && userRepository.existsByUsername(request.username)) {
-            throw IllegalArgumentException("Username ${request.username} is already taken.")
-        }
-
-        // Validation: If email is being changed, check if new email is already registered by another user
-        if(request.email != user.email) {
-            val existingUserWithEmail = userRepository.findByEmail(request.email)
-            if(existingUserWithEmail != null && existingUserWithEmail.id != id) {
-                throw IllegalArgumentException("Email ${request.email} is already registered.")
+        // Validate and compute new username
+        val newUsername = request.username?.let { newName ->
+            if (newName != user.username && userRepository.existsByUsername(newName)) {
+                throw IllegalArgumentException("Username $newName is already taken.")
             }
+            newName
+        } ?: user.username
+
+        // Validate and compute new email
+        val newEmail = request.email?.let { newMail ->
+            if (newMail != user.email) {
+                val existingUserWithEmail = userRepository.findByEmail(newMail)
+                if (existingUserWithEmail != null && existingUserWithEmail.id != id) {
+                    throw IllegalArgumentException("Email $newMail is already registered.")
+                }
+            }
+            newMail
+        } ?: user.email
+
+        // If nothing changed, return as is
+        if (newUsername == user.username && newEmail == user.email) {
+            return user.toDto()
         }
 
         // Create updated user (data classes are immutable, so we create a new instance)
         val updatedUserEntity = user.copy(
-            username = request.username,
-            email = request.email
+            username = newUsername,
+            email = newEmail
         )
 
 
