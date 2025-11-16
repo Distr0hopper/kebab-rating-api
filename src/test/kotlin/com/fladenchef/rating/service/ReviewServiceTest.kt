@@ -373,9 +373,9 @@ class ReviewServiceTest {
         )
 
         val updatedReview = existingReview.copy(
-            rating = updateRequest.rating,
-            title = updateRequest.title,
-            comment = updateRequest.comment
+            rating = updateRequest.rating!!,
+            title = updateRequest.title!!,
+            comment = updateRequest.comment!!
         )
 
         every { reviewRepository.findById(reviewId) } returns Optional.of(existingReview)
@@ -466,9 +466,9 @@ class ReviewServiceTest {
         )
 
         val updatedReview = existingReview.copy(
-            rating = updateRequest.rating,
-            title = updateRequest.title,
-            comment = updateRequest.comment
+            rating = updateRequest.rating!!,
+            title = updateRequest.title!!,
+            comment = updateRequest.comment!!
         )
 
         every { reviewRepository.findById(reviewId) } returns Optional.of(existingReview)

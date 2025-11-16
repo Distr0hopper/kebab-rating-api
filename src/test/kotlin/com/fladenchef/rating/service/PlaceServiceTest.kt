@@ -5,7 +5,9 @@ import com.fladenchef.rating.model.dto.CreatePlaceRequestDto
 import com.fladenchef.rating.model.dto.UpdatePlaceRequestDto
 import com.fladenchef.rating.model.entity.Place
 import com.fladenchef.rating.model.enums.PriceRange
+import com.fladenchef.rating.repository.KebabVariantRepository
 import com.fladenchef.rating.repository.PlaceRepository
+import com.fladenchef.rating.repository.ReviewRepository
 import io.mockk.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,6 +19,8 @@ import java.util.UUID
 class PlaceServiceTest {
 
     private val placeRepository: PlaceRepository = mockk()
+    private val kebabVariantRepository = mockk<KebabVariantRepository>()
+    private val reviewRepository = mockk<ReviewRepository>()
     private val placeService = PlaceService(placeRepository, kebabVariantRepository, reviewRepository)
 
     @Test
@@ -309,10 +313,10 @@ class PlaceServiceTest {
         )
 
         val updatedPlace = existingPlace.copy(
-            name = updateRequest.name,
-            address = updateRequest.address,
-            city = updateRequest.city,
-            priceRange = updateRequest.priceRange
+            name = updateRequest.name!!,
+            address = updateRequest.address!!,
+            city = updateRequest.city!!,
+            priceRange = updateRequest.priceRange!!
         )
 
         every { placeRepository.findById(placeId) } returns Optional.of(existingPlace)
@@ -374,10 +378,10 @@ class PlaceServiceTest {
         )
 
         val updatedPlace = existingPlace.copy(
-            name = updateRequest.name,
-            address = updateRequest.address,
-            city = updateRequest.city,
-            priceRange = updateRequest.priceRange
+            name = updateRequest.name!!,
+            address = updateRequest.address!!,
+            city = updateRequest.city!!,
+            priceRange = updateRequest.priceRange!!
         )
 
         every { placeRepository.findById(placeId) } returns Optional.of(existingPlace)
@@ -396,7 +400,11 @@ class PlaceServiceTest {
         // Given
         val placeId = UUID.randomUUID()
 
-        every { placeRepository.existsById(placeId) } returns true
+        val existingPlace = mockk<Place>()
+
+        every { placeRepository.findById(placeId) } returns Optional.of(existingPlace)
+        every { kebabVariantRepository.findByPlace(existingPlace) } returns emptyList()
+        every { kebabVariantRepository.deleteAllByPlace(existingPlace) } just Runs
         every { placeRepository.deleteById(placeId) } just Runs
 
         // When
@@ -411,7 +419,7 @@ class PlaceServiceTest {
         // Given
         val placeId = UUID.randomUUID()
 
-        every { placeRepository.existsById(placeId) } returns false
+        every { placeRepository.findById(placeId) } returns Optional.empty()
 
         // When + Then
         assertThrows<NoSuchElementException> {

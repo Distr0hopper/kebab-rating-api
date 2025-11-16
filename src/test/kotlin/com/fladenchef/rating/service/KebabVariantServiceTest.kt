@@ -10,6 +10,7 @@ import com.fladenchef.rating.repository.BreadTypeRepository
 import com.fladenchef.rating.repository.KebabVariantRepository
 import com.fladenchef.rating.repository.MeatTypeRepository
 import com.fladenchef.rating.repository.PlaceRepository
+import com.fladenchef.rating.repository.ReviewRepository
 import io.mockk.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -28,6 +29,7 @@ class KebabVariantServiceTest {
     private lateinit var breadTypeRepository: BreadTypeRepository
     private lateinit var meatTypeRepository: MeatTypeRepository
     private lateinit var kebabVariantService: KebabVariantService
+    private lateinit var reviewRepository: ReviewRepository
 
     // Gemeinsame Testdaten
     private lateinit var placeId: UUID
@@ -43,6 +45,7 @@ class KebabVariantServiceTest {
         placeRepository = mockk()
         breadTypeRepository = mockk()
         meatTypeRepository = mockk()
+        reviewRepository = mockk()
 
         kebabVariantService = KebabVariantService(
             kebabVariantRepository,
@@ -689,15 +692,15 @@ class KebabVariantServiceTest {
         )
 
         val updatedKebab = existingKebab.copy(
-            name = updateRequest.name,
+            name = updateRequest.name!!,
             description = updateRequest.description,
-            price = updateRequest.price,
+            price = updateRequest.price!!,
             breadType = newBreadType,
             meatType = newMeatType,
-            isVegetarian = updateRequest.isVegetarian,
-            spicy = updateRequest.spicy,
-            sauces = updateRequest.sauces,
-            ingredients = updateRequest.ingredients
+            isVegetarian = updateRequest.isVegetarian!!,
+            spicy = updateRequest.spicy!!,
+            sauces = updateRequest.sauces!!,
+            ingredients = updateRequest.ingredients!!
         )
 
         every { kebabVariantRepository.findById(kebabId) } returns Optional.of(existingKebab)
@@ -902,7 +905,10 @@ class KebabVariantServiceTest {
     fun `should delete kebab variant successfully`() {
         val kebabId = UUID.randomUUID()
 
-        every { kebabVariantRepository.existsById(kebabId) } returns true
+        val kebab = mockk<KebabVariant>()
+
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.of(kebab)
+        every { reviewRepository.deleteAllByKebabVariant(kebab) } just Runs
         every { kebabVariantRepository.deleteById(kebabId) } just Runs
 
         kebabVariantService.deleteKebabVariant(kebabId)
@@ -914,7 +920,7 @@ class KebabVariantServiceTest {
     fun `should throw exception when deleting non-existing kebab`() {
         val kebabId = UUID.randomUUID()
 
-        every { kebabVariantRepository.existsById(kebabId) } returns false
+        every { kebabVariantRepository.findById(kebabId) } returns Optional.empty()
 
         assertThrows<NoSuchElementException> {
             kebabVariantService.deleteKebabVariant(kebabId)

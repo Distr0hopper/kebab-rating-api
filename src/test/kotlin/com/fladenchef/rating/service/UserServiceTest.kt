@@ -3,6 +3,7 @@ package com.fladenchef.rating.service
 import com.fladenchef.rating.model.dto.CreateUserRequestDto
 import com.fladenchef.rating.model.dto.UpdateUserRequestDto
 import com.fladenchef.rating.model.entity.User
+import com.fladenchef.rating.repository.ReviewRepository
 import com.fladenchef.rating.repository.UserRepository
 import io.mockk.Runs
 import io.mockk.every
@@ -18,6 +19,7 @@ import java.util.UUID
 
 class UserServiceTest {
     private val userRepository = mockk<UserRepository>()
+    private val reviewRepository = mockk<ReviewRepository>()
     private val userService = UserService(userRepository, reviewRepository)
 
     @Test
@@ -117,8 +119,8 @@ class UserServiceTest {
         )
 
         val updatedUser = existingUser.copy(
-            username = updateRequest.username,
-            email = updateRequest.email
+            username = updateRequest.username!!,
+            email = updateRequest.email!!
         )
 
         // Mock repository behavior
@@ -250,7 +252,10 @@ class UserServiceTest {
         // Given
         val userId = UUID.randomUUID()
 
-        every { userRepository.existsById(userId) } returns true
+        val user = mockk<User>()
+
+        every { userRepository.findById(userId) } returns Optional.of(user)
+        every { reviewRepository.deleteAllByUser(user) } just Runs
         every { userRepository.deleteById(userId) } just Runs
         // When
         userService.deleteUser(userId)
@@ -263,7 +268,7 @@ class UserServiceTest {
         // Given
         val userId = UUID.randomUUID()
 
-        every { userRepository.existsById(userId) } returns false
+        every { userRepository.findById(userId) } returns Optional.empty()
 
         // When + Then
         assertThrows<IllegalArgumentException> {
