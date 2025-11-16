@@ -52,6 +52,7 @@ docker-compose up -d
 - **pgAdmin:** http://localhost:5050  
   - User: `admin@kebab.com`
   - Password: `admin`
+  - For configuration of server, see `docker-compose.yml`
 
 ## 📚 API Documentation
 
